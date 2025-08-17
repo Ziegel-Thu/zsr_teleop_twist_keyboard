@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'teleop_twist_keyboard'
+package_name = 'zsr_teleop_twist_keyboard'
 
 setup(
     name=package_name,
@@ -16,9 +16,9 @@ setup(
     ],
     install_requires=['setuptools'],
     zip_safe=True,
-    maintainer='Chris Lalancette',
-    maintainer_email='clalancette@openrobotics.org',
-    author='Graylin Trevor Jay, Austin Hendrix',
+    maintainer= 'Ziegel Zheng',
+    maintainer_email='zhengshurui0627@gmail.com',
+    author='Ziegel Zheng',
     keywords=['ROS'],
     classifiers=[
         'Intended Audience :: Developers',
@@ -32,7 +32,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'teleop_twist_keyboard = teleop_twist_keyboard:main'
+            'teleop_twist_keyboard = teleop_twist_keyboard:main',
+            'zsr_teleop_twist_keyboard = zsr_teleop_twist_keyboard:main'
         ],
     },
 )
