@@ -7,12 +7,11 @@
     messages.
   </description>
 
-  <maintainer email="clalancette@openrobotics.org">Chris Lalancette</maintainer>
+  <maintainer email="zhengshurui0627@gmail.com">Ziegel Zheng</maintainer>
 
   <license>BSD License 2.0</license>
 
-  <author email="namniart@gmail.com">Austin Hendrix</author>
-  <author>Graylin Trevor Jay</author>
+  <author email="zhengshurui0627@gmail.com">Ziegel Zheng</author>
 
   <exec_depend>geometry_msgs</exec_depend>
   <exec_depend>rclpy</exec_depend>
