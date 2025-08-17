@@ -126,6 +126,86 @@ def restoreTerminalSettings(old_settings):
     termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
 
 
+def twist_to_channels(twist):
+    """
+    将 twist 消息转换为 16 个 channel 的信号
+    
+    Args:
+        twist: geometry_msgs.msg.Twist 消息
+        
+    Returns:
+        list: 16个channel的信号值，范围0-2047，默认都是1024（中间值）
+    """
+    # 初始化16个channel，默认值为1024（中间值）
+    channels = [1024] * 16
+    def map_to_range(value, min_val=-2.0, max_val=2.0, output_min=0, output_max=2047):
+        normalized = (value - min_val) / (max_val - min_val)
+        return int(normalized * (output_max - output_min) + output_min)
+    
+    channels[3] = map_to_range(twist.linear.x)
+    channels[2] = map_to_range(-twist.linear.y)
+    channels[0] = map_to_range(-twist.angular.z)
+    
+    return channels
+
+
+def channels_to_sbus(channels):
+    """
+    将16个channel值转换为SBUS格式
+    
+    Args:
+        channels: list of 16 integers, 每个值范围0-2047 (11位)
+        
+    Returns:
+        bytes: 25字节的SBUS数据帧
+    """
+
+    for i in range(16):
+        channels[i] = max(0, min(2047, channels[i]))
+    
+    sbus_frame = bytearray(25)
+
+    sbus_frame[0] = 0x0F
+    
+    bit_pos = 0
+    byte_pos = 1
+    
+    for channel in channels:
+        channel_11bit = channel & 0x7FF
+        
+        for bit in range(11):
+            if bit_pos >= 8:
+                bit_pos = 0
+                byte_pos += 1
+            
+            if channel_11bit & (1 << bit):
+                sbus_frame[byte_pos] |= (1 << bit_pos)
+            
+            bit_pos += 1
+    
+    # 标志位 (通常为0)
+    sbus_frame[23] = 0x00
+    
+    # 结束字节
+    sbus_frame[24] = 0x00
+    
+    return bytes(sbus_frame)
+
+
+def twist_to_sbus(twist):
+    """
+    直接将twist转换为SBUS格式的便捷函数
+    
+    Args:
+        twist: geometry_msgs.msg.Twist 消息
+        
+    Returns:
+        bytes: 25字节的SBUS数据帧
+    """
+    channels = twist_to_channels(twist)
+    return channels_to_sbus(channels)
+
+
 def vels(speed, turn):
     return 'currently:\tspeed %s\tturn %s ' % (speed, turn)
 
@@ -148,7 +228,9 @@ def main():
     else:
         TwistMsg = geometry_msgs.msg.Twist
 
-    pub = node.create_publisher(TwistMsg, 'zsr_cmd_vel', 10)
+    # 改为发布SBUS数据
+    from std_msgs.msg import ByteMultiArray
+    pub = node.create_publisher(ByteMultiArray, 'zsr_cmd_vel', 10)
 
     spinner = threading.Thread(target=rclpy.spin, args=(node,))
     spinner.start()
@@ -205,7 +287,12 @@ def main():
             twist.angular.x = 0.0
             twist.angular.y = 0.0
             twist.angular.z = th * turn
-            pub.publish(twist_msg)
+            
+            # 只改这里：转换为SBUS并发布
+            sbus_data = twist_to_sbus(twist)
+            sbus_msg = ByteMultiArray()
+            sbus_msg.data = list(sbus_data)
+            pub.publish(sbus_msg)
 
     except Exception as e:
         print(e)
@@ -220,7 +307,13 @@ def main():
         twist.angular.x = 0.0
         twist.angular.y = 0.0
         twist.angular.z = 0.0
-        pub.publish(twist_msg)
+        
+        # 这里也改为发布SBUS
+        sbus_data = twist_to_sbus(twist)
+        sbus_msg = ByteMultiArray()
+        sbus_msg.data = list(sbus_data)
+        pub.publish(sbus_msg)
+        
         rclpy.shutdown()
         spinner.join()
 
