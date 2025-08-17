@@ -7,7 +7,8 @@ setup(
     version='2.4.0',
     packages=[],
     py_modules=[
-        'teleop_twist_keyboard'
+        'teleop_twist_keyboard',
+        'zsr_teleop_twist_keyboard'
     ],
     data_files=[
         ('share/ament_index/resource_index/packages',
