@@ -229,8 +229,8 @@ def main():
         TwistMsg = geometry_msgs.msg.Twist
 
     # 改为发布SBUS数据
-    from std_msgs.msg import ByteMultiArray
-    pub = node.create_publisher(ByteMultiArray, 'zsr_cmd_vel', 10)
+    from std_msgs.msg import UInt8MultiArray
+    pub = node.create_publisher(UInt8MultiArray, 'zsr_cmd_vel', 10)
 
     spinner = threading.Thread(target=rclpy.spin, args=(node,))
     spinner.start()
@@ -290,8 +290,9 @@ def main():
             
             # 只改这里：转换为SBUS并发布
             sbus_data = twist_to_sbus(twist)
-            sbus_msg = ByteMultiArray()
+            sbus_msg = UInt8MultiArray()
             sbus_msg.data = list(sbus_data)
+            sbus_msg.layout.data_offset = 1024
             pub.publish(sbus_msg)
 
     except Exception as e:
@@ -310,8 +311,9 @@ def main():
         
         # 这里也改为发布SBUS
         sbus_data = twist_to_sbus(twist)
-        sbus_msg = ByteMultiArray()
+        sbus_msg = UInt8MultiArray()
         sbus_msg.data = list(sbus_data)
+        sbus_msg.layout.data_offset = 1024
         pub.publish(sbus_msg)
         
         rclpy.shutdown()
