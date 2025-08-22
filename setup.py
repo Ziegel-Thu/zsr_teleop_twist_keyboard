@@ -8,7 +8,8 @@ setup(
     packages=[],
     py_modules=[
         'teleop_twist_keyboard',
-        'zsr_teleop_twist_keyboard'
+        'zsr_teleop_twist_keyboard',
+        'zsr_serial_publisher'
     ],
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -34,7 +35,8 @@ setup(
     entry_points={
         'console_scripts': [
             'teleop_twist_keyboard = teleop_twist_keyboard:main',
-            'zsr_teleop_twist_keyboard = zsr_teleop_twist_keyboard:main'
+            'zsr_teleop_twist_keyboard = zsr_teleop_twist_keyboard:main',
+            'zsr_serial_publisher = zsr_serial_publisher:main'
         ],
     },
 )
